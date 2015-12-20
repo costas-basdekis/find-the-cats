@@ -3,7 +3,7 @@ from unittest import TestCase, main as unittest_main
 import main
 
 
-class Factory(object):
+class StationsFactory(object):
 	STATION_1_ID_STR, STATION_1_NAME = "1", "London Bridge"
 	STATION_1_ID = int(STATION_1_ID_STR)
 
@@ -42,44 +42,60 @@ class Factory(object):
 		return stations
 
 
+class GameFactory(object):
+	@classmethod
+	def create_game(cls, stations=None):
+		if not stations:
+			stations = StationsFactory.create_stations_with_json_stations_and_connections()
+
+		return main.FindTheCatGame(stations)
+
+
 class TestStations(TestCase):
 	def test_create_stations(self):
-		Factory.create_stations()
+		StationsFactory.create_stations()
 
 	def test_loading_stations(self):
-		Factory.create_stations_with_json_stations()
+		StationsFactory.create_stations_with_json_stations()
 
 	def test_station_by_id_name_matches_from_loaded_stations(self):
-		stations = Factory.create_stations_with_json_stations()
+		stations = StationsFactory.create_stations_with_json_stations()
 
-		self.assertIn(Factory.STATION_1_ID, stations.stations_by_id)
-		station_1 = stations.by_id(Factory.STATION_1_ID)
-		self.assertEquals(station_1._id, Factory.STATION_1_ID)
-		self.assertEquals(station_1.name, Factory.STATION_1_NAME)
+		self.assertIn(StationsFactory.STATION_1_ID, stations.stations_by_id)
+		station_1 = stations.by_id(StationsFactory.STATION_1_ID)
+		self.assertEquals(station_1._id, StationsFactory.STATION_1_ID)
+		self.assertEquals(station_1.name, StationsFactory.STATION_1_NAME)
 
+
+class TestConnections(TestCase):
 	def test_loading_connections(self):
-		stations = Factory.create_stations_with_json_stations_and_connections()
+		stations = StationsFactory.create_stations_with_json_stations_and_connections()
 
 	def test_stations_are_connected(self):
-		stations = Factory.create_stations_with_json_stations_and_connections()
+		stations = StationsFactory.create_stations_with_json_stations_and_connections()
 
-		station_1 = stations.by_id(Factory.STATION_1_ID)
-		station_2 = stations.by_id(Factory.STATION_2_ID)
+		station_1 = stations.by_id(StationsFactory.STATION_1_ID)
+		station_2 = stations.by_id(StationsFactory.STATION_2_ID)
 
 		self.assertIn(station_2, station_1.connections)
 		self.assertIn(station_1, station_2.connections)
 
 	def test_stations_are_not_connected(self):
-		stations = Factory.create_stations_with_json_stations_and_connections()
+		stations = StationsFactory.create_stations_with_json_stations_and_connections()
 
-		station_1 = stations.by_id(Factory.STATION_1_ID)
-		station_2 = stations.by_id(Factory.STATION_2_ID)
-		station_3 = stations.by_id(Factory.STATION_3_ID)
+		station_1 = stations.by_id(StationsFactory.STATION_1_ID)
+		station_2 = stations.by_id(StationsFactory.STATION_2_ID)
+		station_3 = stations.by_id(StationsFactory.STATION_3_ID)
 
 		self.assertNotIn(station_3, station_1.connections)
 		self.assertNotIn(station_1, station_3.connections)
 		self.assertNotIn(station_3, station_2.connections)
 		self.assertNotIn(station_2, station_3.connections)
+
+
+class TestGame(TestCase):
+	def test_creating_game(self):
+		game = GameFactory.create_game()
 
 
 if __name__ == '__main__':
