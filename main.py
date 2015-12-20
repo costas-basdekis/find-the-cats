@@ -150,6 +150,7 @@ class FindTheCatGame(object):
 	def step(self):
 		self.find_and_close_stations()
 		self.move_cats()
+		self.move_owners()
 
 	def find_and_close_stations(self):
 		matched_pairs_per_station = self.get_matched_pairs_per_station()
@@ -173,6 +174,18 @@ class FindTheCatGame(object):
 			next_game_station = random_from_list(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
 			self.cats_game_stations[pair_id] = next_game_station
+
+	def move_owners(self):
+		for pair_id in self.roaming_pairs_ids:
+			owner_game_station = self.owners_game_stations[pair_id]
+			open_neighbours = owner_game_station.open_neighbours
+			if not open_neighbours:
+				continue
+
+			# TODO: We need to move to not-yet-visited station if possible
+			next_game_station = random_from_list(open_neighbours)
+			owner_game_station.move_owner_to(pair_id, next_game_station)
+			self.owners_game_stations[pair_id] = next_game_station
 
 
 class GameStation(object):
@@ -218,6 +231,10 @@ class GameStation(object):
 		self.cats.remove(pair_id)
 		game_station.put_cat(pair_id)
 
+	def move_owner_to(self, pair_id, game_station):
+		self.owners.remove(pair_id)
+		game_station.put_owner(pair_id)
+
 def main():
 	stations = Stations()
 	stations.load_from_json_files("./tfl_stations.json", "./tfl_connections.json")
@@ -228,6 +245,7 @@ def main():
 	game.start(pairs_count)
 	print 'Started a game with', pairs_count, "pairs"
 
+	game.step()
 	game.step()
 
 
