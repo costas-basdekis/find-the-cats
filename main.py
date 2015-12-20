@@ -121,7 +121,7 @@ class FindTheCatGame(object):
 		return self.game_stations[_id]
 
 	def sample_game_stations(self, count):
-		return sample(self.game_stations.valuesf(), count)
+		return sample(self.game_stations.values(), count)
 
 	def put_random_pairs_on_map(self, pairs_count):
 		stations_pairs = self.create_random_station_pairs(pairs_count)
