@@ -30,3 +30,12 @@ class Station(object):
 		self.name = name
 		self.stations = stations
 		self.stations.add_station(self)
+
+
+def main():
+	stations = Stations()
+	stations.load_from_json_files("./tfl_stations.json", "")
+	print 'Loaded', len(stations.stations_by_name), "stations"
+
+if __name__ == '__main__':
+	main()
