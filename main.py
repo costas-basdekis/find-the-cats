@@ -3,13 +3,8 @@ import json
 from random import sample
 
 
-def random_item(_list, avoiding_item=None):
-	item = avoiding_item
-	while item == avoiding_item:
-		# sample returns a list
-		item, = sample(_list, 1)
-
-	return item
+def random_item(iterable):
+	return sample(iterable, 1)[0]
 
 
 class Stations(object):
@@ -35,8 +30,8 @@ class Stations(object):
 	def stations_list(self):
 	    return list(self.iterate_stations)
 
-	def get_random_station(self, avoiding_station=None):
-		return random_item(self.stations_list, avoiding_item=avoiding_station)
+	def get_random_stations(self, count):
+		return sample(self.stations_list, count)
 
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
@@ -129,28 +124,19 @@ class FindTheCatGame(object):
 	def by_id(self, _id):
 		return self.game_stations[_id]
 
-	def get_random_game_station(self, avoiding_game_station=None):
-		avoiding_station = \
-			avoiding_game_station.station if avoiding_game_station else None
-		station = self.stations\
-			.get_random_station(avoiding_station=avoiding_station)
-		return self.by_id(station._id)
+	def get_random_game_stations(self, count):
+		stations = self.stations.get_random_stations(count)
+		return [self.by_id(station._id) for station in stations]
 
 	def put_random_pairs_on_map(self, pairs_count):
 		stations_pairs = self.create_random_station_pairs(pairs_count)
 		self.put_pairs_on_map(stations_pairs)
 
 	def create_random_station_pairs(self, pairs_count):
-		stations_pairs = []
-		for pair_id in xrange(pairs_count):
-			cat_game_station = self.get_random_game_station()
-
-			owner_game_station = self\
-				.get_random_game_station(avoiding_game_station=cat_game_station)
-
-			stations_pairs.append((cat_game_station, owner_game_station))
-
-		return stations_pairs
+		return [
+			self.get_random_game_stations(count=2)
+			for _ in xrange(pairs_count)
+		]
 
 	def put_pairs_on_map(self, stations_pairs):
 		pairs_count = len(stations_pairs)
