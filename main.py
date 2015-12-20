@@ -26,9 +26,6 @@ class Stations(object):
 	def stations_list(self):
 	    return list(self.iterate_stations)
 
-	def get_random_stations(self, count):
-		return sample(self.stations_list, count)
-
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
 
@@ -120,9 +117,8 @@ class FindTheCatGame(object):
 	def by_id(self, _id):
 		return self.game_stations[_id]
 
-	def get_random_game_stations(self, count):
-		stations = self.stations.get_random_stations(count)
-		return [self.by_id(station._id) for station in stations]
+	def sample_game_stations(self, count):
+		return sample(self.game_stations.valuesf(), count)
 
 	def put_random_pairs_on_map(self, pairs_count):
 		stations_pairs = self.create_random_station_pairs(pairs_count)
@@ -130,7 +126,7 @@ class FindTheCatGame(object):
 
 	def create_random_station_pairs(self, pairs_count):
 		return [
-			self.get_random_game_stations(count=2)
+			self.sample_game_stations(count=2)
 			for _ in xrange(pairs_count)
 		]
 
