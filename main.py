@@ -11,6 +11,11 @@ def random_from_list(_list, avoiding_item=None):
 	return item
 
 
+def random_from_set(_set, avoiding_item=None):
+	# TODO: This seems a tad redundant everytime we ran it on the same set
+	return random_from_list(list(_set))
+
+
 class Stations(object):
 	def __init__(self):
 		self.stations_by_id = {}
@@ -141,6 +146,12 @@ class FindTheCatGame(object):
 			for pair_id in game_station.owners
 		}
 
+		self.owners_visited_game_stations = {
+			pair_id: {game_station}
+			for pair_id, game_station
+			in self.owners_game_stations.iteritems()
+		}
+
 	def get_matched_pairs_per_station(self):
 		return {
 			game_station: game_station.get_matched_pairs()
@@ -171,7 +182,7 @@ class FindTheCatGame(object):
 			if not open_neighbours:
 				continue
 
-			next_game_station = random_from_list(open_neighbours)
+			next_game_station = random_from_set(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
 			self.cats_game_stations[pair_id] = next_game_station
 
@@ -182,10 +193,16 @@ class FindTheCatGame(object):
 			if not open_neighbours:
 				continue
 
-			# TODO: We need to move to not-yet-visited station if possible
-			next_game_station = random_from_list(open_neighbours)
+			visited_neighbours = self.owners_visited_game_stations[pair_id]
+			not_visited_open_neighbours = open_neighbours - visited_neighbours
+
+			if not_visited_open_neighbours:
+				next_game_station = random_from_set(not_visited_open_neighbours)
+			else:
+				next_game_station = random_from_set(open_neighbours)
 			owner_game_station.move_owner_to(pair_id, next_game_station)
 			self.owners_game_stations[pair_id] = next_game_station
+			self.owners_visited_game_stations[pair_id].add(next_game_station)
 
 
 class GameStation(object):
@@ -221,11 +238,11 @@ class GameStation(object):
 			for station in stations
 		]
 
-		return [
+		return {
 			game_station
 			for game_station in neighbours
 			if game_station.is_open
-		]
+		}
 
 	def move_cat_to(self, pair_id, game_station):
 		self.cats.remove(pair_id)
