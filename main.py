@@ -105,7 +105,7 @@ class FindTheCatGame(object):
 
 	def start(self, pairs_count):
 		self.initialise_game_stations()
-		self.put_pairs_on_map(pairs_count)
+		self.put_random_pairs_on_map(pairs_count)
 
 	def run(self, iteration_count=100000):
 		for _ in xrange(iteration_count):
@@ -136,7 +136,24 @@ class FindTheCatGame(object):
 			.get_random_station(avoiding_station=avoiding_station)
 		return self.by_id(station._id)
 
-	def put_pairs_on_map(self, pairs_count):
+	def put_random_pairs_on_map(self, pairs_count):
+		stations_pairs = self.create_random_station_pairs(pairs_count)
+		self.put_pairs_on_map(stations_pairs)
+
+	def create_random_station_pairs(self, pairs_count):
+		stations_pairs = []
+		for pair_id in xrange(pairs_count):
+			cat_game_station = self.get_random_game_station()
+
+			owner_game_station = self\
+				.get_random_game_station(avoiding_game_station=cat_game_station)
+
+			stations_pairs.append((cat_game_station, owner_game_station))
+
+		return stations_pairs
+
+	def put_pairs_on_map(self, stations_pairs):
+		pairs_count = len(stations_pairs)
 		self.pairs_ids = range(pairs_count)
 		self.roaming_pairs_ids = set(self.pairs_ids)
 
@@ -144,12 +161,9 @@ class FindTheCatGame(object):
 		self.owners_game_stations = {}
 		self.owners_visited_game_stations = {}
 
-		for pair_id in self.pairs_ids:
-			cat_game_station = self.get_random_game_station()
+		for pair_id, (cat_game_station, owner_game_station) in \
+				zip(self.pairs_ids, stations_pairs):
 			cat_game_station.put_cat(pair_id)
-
-			owner_game_station = self\
-				.get_random_game_station(avoiding_game_station=cat_game_station)
 			owner_game_station.put_owner(pair_id)
 
 	@property
