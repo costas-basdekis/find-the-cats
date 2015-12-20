@@ -12,9 +12,15 @@ def random_item(_list, avoiding_item=None):
 
 
 class Stations(object):
+	@classmethod
+	def from_json_files(cls, stations_filename, connections_filename):
+		stations = cls()
+		stations.load_from_json_files(stations_filename, connections_filename)
+
+		return stations
+
 	def __init__(self):
 		self.stations_by_id = {}
-		self.stations_by_name = {}
 
 	@property
 	def stations_count(self):
@@ -34,20 +40,11 @@ class Stations(object):
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
 
-	@property
-	def bidi_connections_count(self):
-	    return sum(
-	    	len(station.connections_by_id)
-	    	for station
-	    	in self.iterate_stations
-	    )
-
 	def create_station(self, _id, name):
 		Station(_id, name, self)
 
 	def add_station(self, station):
 		self.stations_by_id[station._id] = station
-		self.stations_by_name[station.name] = station
 
 	def load_from_json_files(self, stations_filename, connections_filename):
 		self.load_stations_from_json_file(stations_filename)
@@ -79,13 +76,13 @@ class Station(object):
 		self.name = name
 		self.stations = stations
 		self.stations.add_station(self)
-		self.connections_by_id = {}
+		self.connections = set()
 
 	def connect_with(self, station):
-		if station._id in self.connections_by_id:
+		if station in self.connections:
 			return
 
-		self.connections_by_id[station._id] = station
+		self.connections.add(station)
 		station.connect_with(self)
 
 
@@ -136,6 +133,10 @@ class FindTheCatGame(object):
 		self.pairs_ids = range(pairs_count)
 		self.roaming_pairs_ids = set(self.pairs_ids)
 
+		self.cats_game_stations = {}
+		self.owners_game_stations = {}
+		self.owners_visited_game_stations = {}
+
 		for pair_id in self.pairs_ids:
 			cat_game_station = self.get_random_game_station()
 			cat_game_station.put_cat(pair_id)
@@ -143,24 +144,6 @@ class FindTheCatGame(object):
 			owner_game_station = self\
 				.get_random_game_station(avoiding_game_station=cat_game_station)
 			owner_game_station.put_owner(pair_id)
-
-		self.cats_game_stations = {
-			pair_id: game_station
-			for game_station in self.iterate_game_stations
-			for pair_id in game_station.cats
-		}
-
-		self.owners_game_stations = {
-			pair_id: game_station
-			for game_station in self.iterate_game_stations
-			for pair_id in game_station.owners
-		}
-
-		self.owners_visited_game_stations = {
-			pair_id: {game_station}
-			for pair_id, game_station
-			in self.owners_game_stations.iteritems()
-		}
 
 	@property
 	def cats_count(self):
@@ -210,7 +193,6 @@ class FindTheCatGame(object):
 
 			next_game_station = random_item(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
-			self.cats_game_stations[pair_id] = next_game_station
 
 	def move_owners(self):
 		for pair_id in self.roaming_pairs_ids:
@@ -227,8 +209,6 @@ class FindTheCatGame(object):
 			else:
 				next_game_station = random_item(open_neighbours)
 			owner_game_station.move_owner_to(pair_id, next_game_station)
-			self.owners_game_stations[pair_id] = next_game_station
-			self.owners_visited_game_stations[pair_id].add(next_game_station)
 
 
 class GameStation(object):
@@ -246,25 +226,32 @@ class GameStation(object):
 
 	def put_cat(self, pair_id):
 		self.cats.add(pair_id)
+		self.game.cats_game_stations[pair_id] = self
 
 	def put_owner(self, pair_id):
 		self.owners.add(pair_id)
+		self.game.owners_game_stations[pair_id] = self
+		self.game.owners_visited_game_stations\
+			.setdefault(pair_id, set())\
+			.add(self)
 
 	def get_matched_pairs(self):
 		return self.cats & self.owners
 
 	def close(self):
 		self.is_open = False
+		self.remove_matched_pairs()
+
+	def remove_matched_pairs(self):
 		matched_pairs = self.get_matched_pairs()
 		self.cats -= matched_pairs
 		self.owners -= matched_pairs
 
 	@property
 	def open_neighbours(self):
-		stations = self.station.connections_by_id.itervalues()
 		neighbours = [
 			self.game.game_stations[station._id]
-			for station in stations
+			for station in self.station.connections
 		]
 
 		return {
@@ -281,10 +268,9 @@ class GameStation(object):
 		self.owners.remove(pair_id)
 		game_station.put_owner(pair_id)
 
+
 def main():
-	stations = Stations()
-	stations.load_from_json_files("./tfl_stations.json", "./tfl_connections.json")
-	print 'Loaded', stations.stations_count, "stations, with ", stations.bidi_connections_count, "total connections"
+	stations = Stations.from_json_files("./tfl_stations.json", "./tfl_connections.json")
 
 	pairs_count = 10
 	FindTheCatGame.start_and_run(stations, pairs_count=pairs_count)
