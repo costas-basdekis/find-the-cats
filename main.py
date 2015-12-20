@@ -1,4 +1,5 @@
 import json
+from random import randint
 
 
 class Stations(object):
@@ -13,6 +14,13 @@ class Stations(object):
 	@property
 	def iterate_stations(self):
 	    return self.stations_by_id.itervalues()
+
+	@property
+	def stations_id_range(self):
+	    return min(self.stations_by_id), max(self.stations_by_id)
+
+	def by_id(self, _id):
+	    return self.stations_by_id[_id]
 
 	@property
 	def bidi_connections_count(self):
@@ -47,8 +55,8 @@ class Stations(object):
 
 		for first_id_str, second_id_str in raw_connections:
 			first_id, second_id = int(first_id_str), int(second_id_str)
-			first_station = self.stations_by_id[first_id]
-			second_station = self.stations_by_id[second_id]
+			first_station = self.by_id(first_id)
+			second_station = self.by_id(second_id)
 
 			first_station.connect_with(second_station)
 
@@ -75,12 +83,30 @@ class FindTheCatGame(object):
 
 	def start(self, pairs_count):
 		self.initialise_game_stations()
+		self.put_pairs_on_map(pairs_count)
 
 	def initialise_game_stations(self):
 		self.game_stations = {
-			station: GameStation(self, station)
+			station._id: GameStation(self, station)
 			for station in self.stations.iterate_stations
 		}
+
+	def by_id(self, _id):
+		return self.game_stations[_id]
+
+	def put_pairs_on_map(self, pairs_count):
+		min_station_id, max_station_id = self.stations.stations_id_range
+		for pair_id in xrange(pairs_count):
+			cat_station_id = randint(min_station_id, max_station_id)
+			owner_station_id = cat_station_id
+			while owner_station_id == cat_station_id:
+				owner_station_id = randint(min_station_id, max_station_id)
+
+			cat_station = self.by_id(cat_station_id)
+			cat_station.put_cat(pair_id)
+
+			owner_station = self.by_id(owner_station_id)
+			owner_station.put_owner(pair_id)
 
 
 class GameStation(object):
@@ -93,8 +119,14 @@ class GameStation(object):
 		self.game = game
 		self.station = station
 		self.is_open = True
-		self.cats = {}
-		self.owners = {}
+		self.cats = set()
+		self.owners = set()
+
+	def put_cat(self, pair_id):
+		self.cats.add(pair_id)
+
+	def put_owner(self, pair_id):
+		self.owners.add(pair_id)
 
 
 def main():
