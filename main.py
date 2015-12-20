@@ -235,15 +235,33 @@ class GameStation(object):
 		self.owners = set()
 
 	def put_cat(self, pair_id):
+		self.remove_cat_from_previous_game_station(pair_id)
 		self.cats.add(pair_id)
 		self.game.cats_game_stations[pair_id] = self
 
 	def put_owner(self, pair_id):
+		self.remove_owner_from_previous_game_station(pair_id)
 		self.owners.add(pair_id)
 		self.game.owners_game_stations[pair_id] = self
 		self.game.owners_visited_game_stations\
 			.setdefault(pair_id, set())\
 			.add(self)
+
+	def remove_cat(self, pair_id):
+		self.cats.remove(pair_id)
+
+	def remove_cat_from_previous_game_station(self, pair_id):
+		previous_game_station = self.game.cats_game_stations.get(pair_id)
+		if previous_game_station:
+			previous_game_station.remove_cat(pair_id)
+
+	def remove_owner(self, pair_id):
+		self.owners.remove(pair_id)
+
+	def remove_owner_from_previous_game_station(self, pair_id):
+		previous_game_station = self.game.owners_game_stations.get(pair_id)
+		if previous_game_station:
+			previous_game_station.remove_owner(pair_id)
 
 	def get_matched_pairs(self):
 		return self.cats & self.owners
@@ -271,11 +289,11 @@ class GameStation(object):
 		}
 
 	def move_cat_to(self, pair_id, game_station):
-		self.cats.remove(pair_id)
+		self.remove_cat(pair_id)
 		game_station.put_cat(pair_id)
 
 	def move_owner_to(self, pair_id, game_station):
-		self.owners.remove(pair_id)
+		self.remove_owner(pair_id)
 		game_station.put_owner(pair_id)
 
 

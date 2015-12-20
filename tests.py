@@ -13,10 +13,18 @@ class StationsFactory(object):
 	STATION_3_ID_STR, STATION_3_NAME = "3", "Green Park"
 	STATION_3_ID = int(STATION_3_ID_STR)
 
+	STATION_4_ID_STR, STATION_4_NAME = "4", "Oxford Circus"
+	STATION_4_ID = int(STATION_4_ID_STR)
+
 	STATIONS_JSON = [
 		[STATION_1_ID, STATION_1_NAME],
 		[STATION_2_ID, STATION_2_NAME],
 		[STATION_3_ID, STATION_3_NAME],
+		[STATION_4_ID, STATION_4_NAME],
+	]
+	STATIONS_IDS = [
+		_id
+		for _id, _ in STATIONS_JSON
 	]
 
 	CONNECTIONS_JSON = [
@@ -61,6 +69,19 @@ class GameFactory(object):
 		for pair_id, (first_id, second_id) in enumerate(STATIONS_PAIRS_IDS)
 		if first_id == second_id
 	}
+	UNMATCHED_PAIRS_ON_START = [
+		pair_id
+		for pair_id, (first_id, second_id) in enumerate(STATIONS_PAIRS_IDS)
+		if first_id != second_id
+	]
+	STATIONS_WITH_MATCHED_PAIRS = {
+		first_id
+		for pair_id, (first_id, second_id) in enumerate(STATIONS_PAIRS_IDS)
+		if first_id == second_id
+	}
+	STATIONS_WITHOUT_MATCHED_PAIRS = sorted(
+		set(StationsFactory.STATIONS_IDS) - STATIONS_WITH_MATCHED_PAIRS
+	)
 
 	@classmethod
 	def create_game(cls, stations=None):
@@ -80,6 +101,14 @@ class GameFactory(object):
 		game.start(pairs_count, stations_pairs_ids=stations_pairs_ids)
 
 		return game, pairs_count
+
+	@classmethod
+	def move_cat_and_owner_to_same_game_station(cls, game, pair_id):
+		a_common_station = game.by_id(StationsFactory.STATION_1_ID)
+		a_common_station.put_cat(pair_id)
+		a_common_station.put_owner(pair_id)
+
+		return a_common_station
 
 
 class TestStations(TestCase):
@@ -146,6 +175,50 @@ class TestGame(TestCase):
 		self.assertNotEquals(GameFactory.MATCHED_PAIRS_ON_START, set())
 		self.assertEquals(game.get_all_matched_pairs(),
 						  GameFactory.MATCHED_PAIRS_ON_START)
+
+	def test_moving_a_cat_and_an_owner_to_a_station_matches_them(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		originally_unmatched_pair_id = GameFactory.UNMATCHED_PAIRS_ON_START[0]
+
+		self.assertNotIn(originally_unmatched_pair_id, game.get_all_matched_pairs())
+
+		GameFactory.move_cat_and_owner_to_same_game_station(
+			game, originally_unmatched_pair_id)
+
+		self.assertIn(originally_unmatched_pair_id, game.get_all_matched_pairs())
+
+	def test_matched_pairs_on_first_step_disappear(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		game.find_and_close_stations()
+		self.assertEquals(game.get_all_matched_pairs(), set())
+
+	def test_moving_a_cat_and_an_owner_to_a_station_closes_the_station(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		originally_unmatched_pair_id = GameFactory.UNMATCHED_PAIRS_ON_START[0]
+
+		game_station = GameFactory.move_cat_and_owner_to_same_game_station(
+			game, originally_unmatched_pair_id)
+
+		self.assertTrue(game_station.is_open)
+
+		game.find_and_close_stations()
+
+		self.assertFalse(game_station.is_open)
+
+	def test_a_station_without_matching_pairs_stays_open(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_station_without_matches = game.by_id(
+			GameFactory.STATIONS_WITHOUT_MATCHED_PAIRS[0])
+
+		self.assertTrue(a_station_without_matches.is_open)
+
+		game.find_and_close_stations()
+
+		self.assertTrue(a_station_without_matches.is_open)
 
 
 if __name__ == '__main__':
