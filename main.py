@@ -1,19 +1,14 @@
 import json
-from random import randint
+from random import sample
 
 
-def random_from_list(_list, avoiding_item=None):
+def random_item(_list, avoiding_item=None):
 	item = avoiding_item
 	while item == avoiding_item:
-		item_index = randint(0, len(_list) - 1)
-		item = _list[item_index]
+		# sample returns a list
+		item, = sample(_list, 1)
 
 	return item
-
-
-def random_from_set(_set, avoiding_item=None):
-	# TODO: This seems a tad redundant everytime we ran it on the same set
-	return random_from_list(list(_set))
 
 
 class Stations(object):
@@ -34,7 +29,7 @@ class Stations(object):
 	    return list(self.iterate_stations)
 
 	def get_random_station(self, avoiding_station=None):
-		return random_from_list(self.stations_list, avoiding_item=avoiding_station)
+		return random_item(self.stations_list, avoiding_item=avoiding_station)
 
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
@@ -182,7 +177,7 @@ class FindTheCatGame(object):
 			if not open_neighbours:
 				continue
 
-			next_game_station = random_from_set(open_neighbours)
+			next_game_station = random_item(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
 			self.cats_game_stations[pair_id] = next_game_station
 
@@ -197,9 +192,9 @@ class FindTheCatGame(object):
 			not_visited_open_neighbours = open_neighbours - visited_neighbours
 
 			if not_visited_open_neighbours:
-				next_game_station = random_from_set(not_visited_open_neighbours)
+				next_game_station = random_item(not_visited_open_neighbours)
 			else:
-				next_game_station = random_from_set(open_neighbours)
+				next_game_station = random_item(open_neighbours)
 			owner_game_station.move_owner_to(pair_id, next_game_station)
 			self.owners_game_stations[pair_id] = next_game_station
 			self.owners_visited_game_stations[pair_id].add(next_game_station)
