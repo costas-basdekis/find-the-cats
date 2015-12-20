@@ -53,17 +53,23 @@ class Stations(object):
 
 	def load_stations_from_json_file(self, stations_filename):
 		with open(stations_filename, 'rb') as f:
-			raw_stations = json.load(f)
+			stations_json = json.load(f)
 
-		for _id_str, name in raw_stations:
+		self.load_stations_from_json(stations_json)
+
+	def load_stations_from_json(self, stations_json):
+		for _id_str, name in stations_json:
 			_id = int(_id_str)
 			self.create_station(_id, name)
 
 	def load_connections_from_json_file(self, connections_filename):
 		with open(connections_filename, 'rb') as f:
-			raw_connections = json.load(f)
+			connections_json = json.load(f)
 
-		for first_id_str, second_id_str in raw_connections:
+		self.load_connections_from_json(connections_json)
+
+	def load_connections_from_json(self, connections_json):
+		for first_id_str, second_id_str in connections_json:
 			first_id, second_id = int(first_id_str), int(second_id_str)
 			first_station = self.by_id(first_id)
 			second_station = self.by_id(second_id)
