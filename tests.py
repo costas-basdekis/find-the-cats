@@ -97,6 +97,20 @@ class TestGame(TestCase):
 	def test_creating_game(self):
 		game = GameFactory.create_game()
 
+	def test_starting_game(self):
+		game = GameFactory.create_game()
+		game.start(10)
+
+	def test_just_started_game_counts(self):
+		game = GameFactory.create_game()
+		pairs_count = 10
+		game.start(pairs_count)
+
+		self.assertEquals(game.cats_count, pairs_count)
+		self.assertEquals(game.cats_found, 0)
+		self.assertEquals(game.roaming_pairs_count, pairs_count)
+		self.assertEquals(game.roaming_pairs_exist, True)
+
 
 if __name__ == '__main__':
 	unittest_main()
