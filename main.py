@@ -6,6 +6,18 @@ class Stations(object):
 		self.stations_by_id = {}
 		self.stations_by_name = {}
 
+	@property
+	def stations_count(self):
+		return len(self.stations_by_id)
+
+	@property
+	def bidi_connections_count(self):
+	    return sum(
+	    	len(station.connections_by_id)
+	    	for station
+	    	in self.stations_by_name.itervalues()
+	    )
+
 	def create_station(self, _id, name):
 		Station(_id, name, self)
 
@@ -54,7 +66,7 @@ class Station(object):
 def main():
 	stations = Stations()
 	stations.load_from_json_files("./tfl_stations.json", "./tfl_connections.json")
-	print 'Loaded', len(stations.stations_by_name), "stations, with ", sum(len(station.connections_by_id) for station in stations.stations_by_name.itervalues()), "total connections"
+	print 'Loaded', stations.stations_count, "stations, with ", stations.bidi_connections_count, "total connections"
 
 if __name__ == '__main__':
 	main()
