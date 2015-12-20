@@ -158,8 +158,7 @@ class TestGame(TestCase):
 		game = GameFactory.create_game()
 
 	def test_starting_game(self):
-		game = GameFactory.create_game()
-		game.start(10)
+		game, pairs_count = GameFactory.create_and_start_game()
 
 	def test_just_started_game_counts(self):
 		game, pairs_count = GameFactory.create_and_start_game()
@@ -180,12 +179,10 @@ class TestGame(TestCase):
 		game, pairs_count = GameFactory.create_and_start_game()
 
 		originally_unmatched_pair_id = GameFactory.UNMATCHED_PAIRS_ON_START[0]
-
 		self.assertNotIn(originally_unmatched_pair_id, game.get_all_matched_pairs())
 
 		GameFactory.move_cat_and_owner_to_same_game_station(
 			game, originally_unmatched_pair_id)
-
 		self.assertIn(originally_unmatched_pair_id, game.get_all_matched_pairs())
 
 	def test_matched_pairs_on_first_step_disappear(self):
@@ -201,11 +198,9 @@ class TestGame(TestCase):
 
 		game_station = GameFactory.move_cat_and_owner_to_same_game_station(
 			game, originally_unmatched_pair_id)
-
 		self.assertTrue(game_station.is_open)
 
 		game.find_and_close_stations()
-
 		self.assertFalse(game_station.is_open)
 
 	def test_a_station_without_matching_pairs_stays_open(self):
@@ -213,11 +208,9 @@ class TestGame(TestCase):
 
 		a_station_without_matches = game.by_id(
 			GameFactory.STATIONS_WITHOUT_MATCHED_PAIRS[0])
-
 		self.assertTrue(a_station_without_matches.is_open)
 
 		game.find_and_close_stations()
-
 		self.assertTrue(a_station_without_matches.is_open)
 
 
