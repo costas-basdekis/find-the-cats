@@ -11,11 +11,15 @@ class Stations(object):
 		return len(self.stations_by_id)
 
 	@property
+	def iterate_stations(self):
+	    return self.stations_by_id.itervalues()
+
+	@property
 	def bidi_connections_count(self):
 	    return sum(
 	    	len(station.connections_by_id)
 	    	for station
-	    	in self.stations_by_name.itervalues()
+	    	in self.iterate_stations
 	    )
 
 	def create_station(self, _id, name):
@@ -73,11 +77,16 @@ class FindTheCatGame(object):
 	def initialise_game_stations(self):
 		self.game_stations = {
 			station: GameStation(self, station)
-			for station in self.stations.stations_by_id.itervalues()
+			for station in self.stations.iterate_stations
 		}
 
 
 class GameStation(object):
+	"""
+	We are using a differnt class for GameStation, because so that we can have
+	more than one instances of FindTheCatGame at any point. The reason we want
+	that, is separation of concerns.
+	"""
 	def __init__(self, game, station):
 		self.game = game
 		self.station = station
