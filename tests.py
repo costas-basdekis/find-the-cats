@@ -56,6 +56,11 @@ class GameFactory(object):
 		[StationsFactory.STATION_1_ID, StationsFactory.STATION_3_ID],
 	]
 	PAIRS_COUNT = len(STATIONS_PAIRS_IDS)
+	MATCHED_PAIRS_ON_START = {
+		pair_id
+		for pair_id, (first_id, second_id) in enumerate(STATIONS_PAIRS_IDS)
+		if first_id == second_id
+	}
 
 	@classmethod
 	def create_game(cls, stations=None):
@@ -134,6 +139,13 @@ class TestGame(TestCase):
 		self.assertEquals(game.cats_found, 0)
 		self.assertEquals(game.roaming_pairs_count, pairs_count)
 		self.assertEquals(game.roaming_pairs_exist, True)
+
+	def test_matched_pairs_on_just_started_game(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		self.assertNotEquals(GameFactory.MATCHED_PAIRS_ON_START, set())
+		self.assertEquals(game.get_all_matched_pairs(),
+						  GameFactory.MATCHED_PAIRS_ON_START)
 
 
 if __name__ == '__main__':

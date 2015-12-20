@@ -173,6 +173,10 @@ class FindTheCatGame(object):
 			for game_station in self.iterate_game_stations
 		}
 
+	def get_all_matched_pairs(self):
+		matched_pairs_lists = self.get_matched_pairs_per_station().itervalues()
+		return reduce(set.__or__, matched_pairs_lists, set())
+
 	def step(self):
 		self.find_and_close_stations()
 		self.move_cats()
