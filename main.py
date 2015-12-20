@@ -63,10 +63,38 @@ class Station(object):
 		station.connect_with(self)
 
 
+class FindTheCatGame(object):
+	def __init__(self, stations):
+		self.stations = stations
+
+	def start(self, pairs_count):
+		self.initialise_game_stations()
+
+	def initialise_game_stations(self):
+		self.game_stations = {
+			station: GameStation(self, station)
+			for station in self.stations.stations_by_id.itervalues()
+		}
+
+
+class GameStation(object):
+	def __init__(self, game, station):
+		self.game = game
+		self.station = station
+		self.is_open = True
+		self.cats = {}
+		self.owners = {}
+
+
 def main():
 	stations = Stations()
 	stations.load_from_json_files("./tfl_stations.json", "./tfl_connections.json")
 	print 'Loaded', stations.stations_count, "stations, with ", stations.bidi_connections_count, "total connections"
+
+	pairs_count = 10
+	game = FindTheCatGame(stations)
+	game.start(pairs_count)
+	print 'Started a game with', pairs_count, "pairs"
 
 if __name__ == '__main__':
 	main()
