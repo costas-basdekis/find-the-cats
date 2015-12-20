@@ -16,8 +16,17 @@ class Stations(object):
 	    return self.stations_by_id.itervalues()
 
 	@property
-	def stations_id_range(self):
-	    return min(self.stations_by_id), max(self.stations_by_id)
+	def stations_list(self):
+	    return list(self.iterate_stations)
+
+	def get_random_station(self, avoiding_station=None):
+		stations_list = self.stations_list
+		station = avoiding_station
+		while station == avoiding_station:
+			station_index = randint(0, len(stations_list) - 1)
+			station = stations_list[station_index]
+
+		return station
 
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
@@ -91,22 +100,64 @@ class FindTheCatGame(object):
 			for station in self.stations.iterate_stations
 		}
 
+	@property
+	def iterate_game_stations(self):
+		return self.game_stations.itervalues()
+
 	def by_id(self, _id):
 		return self.game_stations[_id]
 
+	def get_random_game_station(self, avoiding_game_station=None):
+		avoiding_station = \
+			avoiding_game_station.station if avoiding_game_station else None
+		station = self.stations\
+			.get_random_station(avoiding_station=avoiding_station)
+		return self.by_id(station._id)
+
 	def put_pairs_on_map(self, pairs_count):
-		min_station_id, max_station_id = self.stations.stations_id_range
-		for pair_id in xrange(pairs_count):
-			cat_station_id = randint(min_station_id, max_station_id)
-			owner_station_id = cat_station_id
-			while owner_station_id == cat_station_id:
-				owner_station_id = randint(min_station_id, max_station_id)
+		self.pairs_ids = range(pairs_count)
+		self.roaming_pairs_ids = set(self.pairs_ids)
 
-			cat_station = self.by_id(cat_station_id)
-			cat_station.put_cat(pair_id)
+		for pair_id in self.pairs_ids:
+			cat_game_station = self.get_random_game_station()
+			cat_game_station.put_cat(pair_id)
 
-			owner_station = self.by_id(owner_station_id)
-			owner_station.put_owner(pair_id)
+			owner_game_station = self\
+				.get_random_game_station(avoiding_game_station=cat_game_station)
+			owner_game_station.put_owner(pair_id)
+
+		self.cats_stations_ids = {
+			pair_id: game_station.station._id
+			for game_station in self.iterate_game_stations
+			for pair_id in game_station.cats
+		}
+
+		self.owners_stations_ids = {
+			pair_id: game_station.station._id
+			for game_station in self.iterate_game_stations
+			for pair_id in game_station.owners
+		}
+
+	def get_matched_pairs_per_station(self):
+		return {
+			game_station: game_station.get_matched_pairs()
+			for game_station in self.iterate_game_stations
+		}
+
+	def step(self):
+		self.find_and_close_stations()
+
+	def find_and_close_stations(self):
+		matched_pairs_per_station = self.get_matched_pairs_per_station()
+		for game_station, matched_pairs in matched_pairs_per_station.iteritems():
+			if not matched_pairs:
+				continue
+
+			for pair_id in matched_pairs:
+				print 'Owner', pair_id, 'found cat', pair_id, '-', game_station.station.name, 'is now closed'
+
+			game_station.close()
+			self.roaming_pairs_ids -= matched_pairs
 
 
 class GameStation(object):
@@ -128,6 +179,12 @@ class GameStation(object):
 	def put_owner(self, pair_id):
 		self.owners.add(pair_id)
 
+	def get_matched_pairs(self):
+		return self.cats & self.owners
+
+	def close(self):
+		self.is_open = False
+
 
 def main():
 	stations = Stations()
@@ -138,6 +195,9 @@ def main():
 	game = FindTheCatGame(stations)
 	game.start(pairs_count)
 	print 'Started a game with', pairs_count, "pairs"
+
+	game.step()
+
 
 if __name__ == '__main__':
 	main()
