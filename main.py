@@ -1,10 +1,6 @@
 import sys
 import json
-from random import sample
-
-
-def random_item(iterable):
-	return sample(iterable, 1)[0]
+from random import sample, choice
 
 
 class Stations(object):
@@ -198,7 +194,7 @@ class FindTheCatGame(object):
 			if not open_neighbours:
 				continue
 
-			next_game_station = random_item(open_neighbours)
+			next_game_station = choice(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
 
 	def move_owners(self):
@@ -212,9 +208,9 @@ class FindTheCatGame(object):
 			not_visited_open_neighbours = open_neighbours - visited_neighbours
 
 			if not_visited_open_neighbours:
-				next_game_station = random_item(not_visited_open_neighbours)
+				next_game_station = choice(not_visited_open_neighbours)
 			else:
-				next_game_station = random_item(open_neighbours)
+				next_game_station = choice(open_neighbours)
 			owner_game_station.move_owner_to(pair_id, next_game_station)
 
 
