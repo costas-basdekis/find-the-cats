@@ -196,29 +196,41 @@ class FindTheCatGame(object):
 
 	def move_cats(self):
 		for pair_id in self.roaming_pairs_ids:
-			cat_game_station = self.cats_game_stations[pair_id]
-			open_neighbours = cat_game_station.open_neighbours
-			if not open_neighbours:
+			possible_game_stations = self.get_cat_possible_moves()
+			if not possible_game_stations:
 				continue
 
-			next_game_station = choice(open_neighbours)
+			next_game_station = choice(possible_game_stations)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
+
+	def get_cat_possible_moves(self, pair_id):
+		cat_game_station = self.cats_game_stations[pair_id]
+		open_neighbours = cat_game_station.open_neighbours
+
+		return open_neighbours
 
 	def move_owners(self):
 		for pair_id in self.roaming_pairs_ids:
+			possible_game_stations = self.get_owner_possible_moves()
+			if not possible_game_stations:
+				continue
+
+			next_game_station = choice(possible_game_stations)
+			owner_game_station.move_owner_to(pair_id, next_game_station)
+
+	def get_owner_possible_moves(self, pair_id):
 			owner_game_station = self.owners_game_stations[pair_id]
 			open_neighbours = owner_game_station.open_neighbours
 			if not open_neighbours:
-				continue
+				open_neighbours
 
 			visited_neighbours = self.owners_visited_game_stations[pair_id]
 			not_visited_open_neighbours = open_neighbours - visited_neighbours
 
 			if not_visited_open_neighbours:
-				next_game_station = choice(not_visited_open_neighbours)
+				return not_visited_open_neighbours
 			else:
-				next_game_station = choice(open_neighbours)
-			owner_game_station.move_owner_to(pair_id, next_game_station)
+				return open_neighbours
 
 
 class GameStation(object):
