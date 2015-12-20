@@ -1,3 +1,4 @@
+import sys
 import json
 from random import sample
 
@@ -270,11 +271,33 @@ class GameStation(object):
 
 
 def main():
-	stations = Stations.from_json_files("./tfl_stations.json", "./tfl_connections.json")
+	pairs_count, = get_arguments()
 
-	pairs_count = 10
+	stations = Stations.from_json_files("./tfl_stations.json", "./tfl_connections.json")
 	FindTheCatGame.start_and_run(stations, pairs_count=pairs_count)
 
+
+def get_arguments():
+	if len(sys.argv) < 2:
+		print 'Please put the number of pairs'
+		return
+
+	if len(sys.argv) > 2:
+		print 'Too many arguments - only put the number of pairs'
+		return
+
+	pairs_count_str = sys.argv[1]
+	try:
+		pairs_count = int(pairs_count_str)
+	except ValueError:
+		print 'Please enter a positive numeric value for the number of pairs'
+		return
+
+	if pairs_count < 1:
+		print 'Please enter a positive numeric value for the number of pairs'
+		return
+
+	return pairs_count,
 
 if __name__ == '__main__':
 	main()
