@@ -2,6 +2,15 @@ import json
 from random import randint
 
 
+def random_from_list(_list, avoiding_item=None):
+	item = avoiding_item
+	while item == avoiding_item:
+		item_index = randint(0, len(_list) - 1)
+		item = _list[item_index]
+
+	return item
+
+
 class Stations(object):
 	def __init__(self):
 		self.stations_by_id = {}
@@ -20,13 +29,7 @@ class Stations(object):
 	    return list(self.iterate_stations)
 
 	def get_random_station(self, avoiding_station=None):
-		stations_list = self.stations_list
-		station = avoiding_station
-		while station == avoiding_station:
-			station_index = randint(0, len(stations_list) - 1)
-			station = stations_list[station_index]
-
-		return station
+		return random_from_list(self.stations_list, avoiding_item=avoiding_station)
 
 	def by_id(self, _id):
 	    return self.stations_by_id[_id]
@@ -126,14 +129,14 @@ class FindTheCatGame(object):
 				.get_random_game_station(avoiding_game_station=cat_game_station)
 			owner_game_station.put_owner(pair_id)
 
-		self.cats_stations_ids = {
-			pair_id: game_station.station._id
+		self.cats_game_stations = {
+			pair_id: game_station
 			for game_station in self.iterate_game_stations
 			for pair_id in game_station.cats
 		}
 
-		self.owners_stations_ids = {
-			pair_id: game_station.station._id
+		self.owners_game_stations = {
+			pair_id: game_station
 			for game_station in self.iterate_game_stations
 			for pair_id in game_station.owners
 		}
@@ -146,6 +149,7 @@ class FindTheCatGame(object):
 
 	def step(self):
 		self.find_and_close_stations()
+		self.move_cats()
 
 	def find_and_close_stations(self):
 		matched_pairs_per_station = self.get_matched_pairs_per_station()
@@ -158,6 +162,16 @@ class FindTheCatGame(object):
 
 			game_station.close()
 			self.roaming_pairs_ids -= matched_pairs
+
+	def move_cats(self):
+		for pair_id in self.roaming_pairs_ids:
+			cat_game_station = self.cats_game_stations[pair_id]
+			open_neighbours = cat_game_station.open_neighbours
+			if not open_neighbours:
+				continue
+
+			next_game_station = random_from_list(open_neighbours)
+			cat_game_station.move_cat_to(pair_id, next_game_station)
 
 
 class GameStation(object):
@@ -185,6 +199,23 @@ class GameStation(object):
 	def close(self):
 		self.is_open = False
 
+	@property
+	def open_neighbours(self):
+		stations = self.station.connections_by_id.itervalues()
+		neighbours = [
+			self.game.game_stations[station._id]
+			for station in stations
+		]
+
+		return [
+			game_station
+			for game_station in neighbours
+			if game_station.is_open
+		]
+
+	def move_cat_to(self, pair_id, game_station):
+		self.cats.remove(pair_id)
+		game_station.put_cat(pair_id)
 
 def main():
 	stations = Stations()
