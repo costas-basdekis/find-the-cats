@@ -91,11 +91,15 @@ class FindTheCatGame(object):
 	def __init__(self, stations):
 		self.stations = stations
 
-	def start(self, pairs_count, stations_pairs=None):
+	def start(self, pairs_count, stations_pairs_ids=None):
 		self.initialise_game_stations()
-		if stations_pairs is None:
+		if stations_pairs_ids is None:
 			self.put_random_pairs_on_map(pairs_count)
 		else:
+			stations_pairs = [
+				[self.by_id(first_id), self.by_id(second_id)]
+				for first_id, second_id in stations_pairs_ids
+			]
 			self.put_pairs_on_map(stations_pairs)
 
 	def run(self, iteration_count=100000):

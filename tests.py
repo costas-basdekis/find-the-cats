@@ -43,12 +43,38 @@ class StationsFactory(object):
 
 
 class GameFactory(object):
+	STATIONS_PAIRS_IDS = [
+		[StationsFactory.STATION_1_ID, StationsFactory.STATION_2_ID],
+		[StationsFactory.STATION_2_ID, StationsFactory.STATION_2_ID],
+		[StationsFactory.STATION_1_ID, StationsFactory.STATION_3_ID],
+		[StationsFactory.STATION_3_ID, StationsFactory.STATION_3_ID],
+		[StationsFactory.STATION_2_ID, StationsFactory.STATION_2_ID],
+		[StationsFactory.STATION_3_ID, StationsFactory.STATION_1_ID],
+		[StationsFactory.STATION_1_ID, StationsFactory.STATION_1_ID],
+		[StationsFactory.STATION_1_ID, StationsFactory.STATION_2_ID],
+		[StationsFactory.STATION_2_ID, StationsFactory.STATION_3_ID],
+		[StationsFactory.STATION_1_ID, StationsFactory.STATION_3_ID],
+	]
+	PAIRS_COUNT = len(STATIONS_PAIRS_IDS)
+
 	@classmethod
 	def create_game(cls, stations=None):
 		if not stations:
 			stations = StationsFactory.create_stations_with_json_stations_and_connections()
 
 		return main.FindTheCatGame(stations)
+
+	@classmethod
+	def create_and_start_game(cls, stations=None, pairs_count=None,
+							  stations_pairs_ids=None):
+		game = cls.create_game(stations=stations)
+		if pairs_count is None:
+			pairs_count = cls.PAIRS_COUNT
+			if stations_pairs_ids is None:
+				stations_pairs_ids = cls.STATIONS_PAIRS_IDS
+		game.start(pairs_count, stations_pairs_ids=stations_pairs_ids)
+
+		return game, pairs_count
 
 
 class TestStations(TestCase):
@@ -102,9 +128,7 @@ class TestGame(TestCase):
 		game.start(10)
 
 	def test_just_started_game_counts(self):
-		game = GameFactory.create_game()
-		pairs_count = 10
-		game.start(pairs_count)
+		game, pairs_count = GameFactory.create_and_start_game()
 
 		self.assertEquals(game.cats_count, pairs_count)
 		self.assertEquals(game.cats_found, 0)
