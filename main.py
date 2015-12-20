@@ -172,6 +172,7 @@ class FindTheCatGame(object):
 
 			next_game_station = random_from_list(open_neighbours)
 			cat_game_station.move_cat_to(pair_id, next_game_station)
+			self.cats_game_stations[pair_id] = next_game_station
 
 
 class GameStation(object):
