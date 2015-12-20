@@ -90,12 +90,27 @@ class Station(object):
 
 
 class FindTheCatGame(object):
+	@classmethod
+	def start_and_run(cls, stations, pairs_count, iteration_count=100000):
+		game = cls(stations)
+		game.start(pairs_count)
+		game.run(iteration_count=iteration_count)
+
 	def __init__(self, stations):
 		self.stations = stations
 
 	def start(self, pairs_count):
 		self.initialise_game_stations()
 		self.put_pairs_on_map(pairs_count)
+
+	def run(self, iteration_count=100000):
+		for _ in xrange(iteration_count):
+			self.step()
+			if not self.roaming_pairs_exist:
+				break
+
+		print 'Total number of cats:', self.cats_count
+		print 'Number of cats found:', self.cats_found
 
 	def initialise_game_stations(self):
 		self.game_stations = {
@@ -146,6 +161,22 @@ class FindTheCatGame(object):
 			for pair_id, game_station
 			in self.owners_game_stations.iteritems()
 		}
+
+	@property
+	def cats_count(self):
+		return len(self.pairs_ids)
+
+	@property
+	def roaming_pairs_exist(self):
+		return bool(self.roaming_pairs_ids)
+
+	@property
+	def roaming_pairs_count(self):
+		return len(self.roaming_pairs_ids)
+
+	@property
+	def cats_found(self):
+		return self.cats_count - self.roaming_pairs_count
 
 	def get_matched_pairs_per_station(self):
 		return {
@@ -256,12 +287,7 @@ def main():
 	print 'Loaded', stations.stations_count, "stations, with ", stations.bidi_connections_count, "total connections"
 
 	pairs_count = 10
-	game = FindTheCatGame(stations)
-	game.start(pairs_count)
-	print 'Started a game with', pairs_count, "pairs"
-
-	game.step()
-	game.step()
+	FindTheCatGame.start_and_run(stations, pairs_count=pairs_count)
 
 
 if __name__ == '__main__':
