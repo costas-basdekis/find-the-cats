@@ -73,6 +73,9 @@ class Station(object):
 		self.stations.add_station(self)
 		self.connections = set()
 
+	def __repr__(self):
+		return '<Station %s>' % self._id
+
 	def connect_with(self, station):
 		if station in self.connections:
 			return
@@ -245,6 +248,9 @@ class GameStation(object):
 		self.is_open = True
 		self.cats = set()
 		self.owners = set()
+
+	def __repr__(self):
+		return '<GameStation %s>' % self.station._id
 
 	def put_cat(self, pair_id):
 		self.remove_cat_from_previous_game_station(pair_id)
