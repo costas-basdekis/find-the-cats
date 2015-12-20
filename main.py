@@ -224,6 +224,9 @@ class GameStation(object):
 
 	def close(self):
 		self.is_open = False
+		matched_pairs = self.get_matched_pairs()
+		self.cats -= matched_pairs
+		self.owners -= matched_pairs
 
 	@property
 	def open_neighbours(self):
