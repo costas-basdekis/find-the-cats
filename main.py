@@ -37,14 +37,16 @@ class Stations(object):
 		with open(stations_filename, 'rb') as f:
 			raw_stations = json.load(f)
 
-		for _id, name in raw_stations:
+		for _id_str, name in raw_stations:
+			_id = int(_id_str)
 			self.create_station(_id, name)
 
 	def load_connections_from_json_file(self, connections_filename):
 		with open(connections_filename, 'rb') as f:
 			raw_connections = json.load(f)
 
-		for first_id, second_id in raw_connections:
+		for first_id_str, second_id_str in raw_connections:
+			first_id, second_id = int(first_id_str), int(second_id_str)
 			first_station = self.stations_by_id[first_id]
 			second_station = self.stations_by_id[second_id]
 
