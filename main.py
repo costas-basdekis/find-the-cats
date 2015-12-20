@@ -294,15 +294,17 @@ class GameStation(object):
 		self.owners -= matched_pairs
 
 	@property
-	def open_neighbours(self):
-		neighbours = [
+	def neighbours(self):
+		return [
 			self.game.game_stations[station._id]
 			for station in self.station.connections
 		]
 
+	@property
+	def open_neighbours(self):
 		return {
 			game_station
-			for game_station in neighbours
+			for game_station in self.neighbours
 			if game_station.is_open
 		}
 
