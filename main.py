@@ -295,10 +295,10 @@ class GameStation(object):
 
 	@property
 	def neighbours(self):
-		return [
+		return {
 			self.game.game_stations[station._id]
 			for station in self.station.connections
-		]
+		}
 
 	@property
 	def open_neighbours(self):

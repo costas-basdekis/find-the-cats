@@ -29,6 +29,7 @@ class StationsFactory(object):
 
 	CONNECTIONS_JSON = [
 		[STATION_1_ID_STR, STATION_2_ID_STR],
+		[STATION_1_ID_STR, STATION_4_ID_STR],
 	]
 
 	@classmethod
@@ -122,6 +123,7 @@ class TestStations(TestCase):
 		stations = StationsFactory.create_stations_with_json_stations()
 
 		self.assertIn(StationsFactory.STATION_1_ID, stations.stations_by_id)
+
 		station_1 = stations.by_id(StationsFactory.STATION_1_ID)
 		self.assertEquals(station_1._id, StationsFactory.STATION_1_ID)
 		self.assertEquals(station_1.name, StationsFactory.STATION_1_NAME)
@@ -179,6 +181,7 @@ class TestGame(TestCase):
 		game, pairs_count = GameFactory.create_and_start_game()
 
 		originally_unmatched_pair_id = GameFactory.UNMATCHED_PAIRS_ON_START[0]
+		# Fixures sanity check
 		self.assertNotIn(originally_unmatched_pair_id, game.get_all_matched_pairs())
 
 		GameFactory.move_cat_and_owner_to_same_game_station(
@@ -198,6 +201,7 @@ class TestGame(TestCase):
 
 		game_station = GameFactory.move_cat_and_owner_to_same_game_station(
 			game, originally_unmatched_pair_id)
+		# Fixures sanity check
 		self.assertTrue(game_station.is_open)
 
 		game.find_and_close_stations()
@@ -208,10 +212,108 @@ class TestGame(TestCase):
 
 		a_station_without_matches = game.by_id(
 			GameFactory.STATIONS_WITHOUT_MATCHED_PAIRS[0])
+		# Fixures sanity check
 		self.assertTrue(a_station_without_matches.is_open)
 
 		game.find_and_close_stations()
 		self.assertTrue(a_station_without_matches.is_open)
+
+	def test_possible_cat_moves_in_just_started_game(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 0
+		cat_game_station = game.cats_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(cat_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		cat_game_station_neighbours = {
+			game.by_id(StationsFactory.STATION_2_ID),
+			game.by_id(StationsFactory.STATION_4_ID),
+		}
+		# Fixures sanity check
+		self.assertEquals(cat_game_station.neighbours, cat_game_station_neighbours)
+
+		cat_possible_moves = game.get_cat_possible_moves(a_pair_id)
+		self.assertEquals(cat_possible_moves, cat_game_station_neighbours)
+
+	def test_possible_cat_moves_dont_contain_game_station_after_closing(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 0
+		cat_game_station = game.cats_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(cat_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		a_neighbour_game_station = list(cat_game_station.neighbours)[0]
+		self.assertIn(a_neighbour_game_station,
+					  game.get_cat_possible_moves(a_pair_id))
+
+		a_neighbour_game_station.close()
+		self.assertNotIn(a_neighbour_game_station,
+						 game.get_cat_possible_moves(a_pair_id))
+
+	def test_possible_owner_moves_in_just_started_game(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 5
+		owner_game_station = game.owners_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		owner_game_station_neighbours = {
+			game.by_id(StationsFactory.STATION_2_ID),
+			game.by_id(StationsFactory.STATION_4_ID),
+		}
+		# Fixures sanity check
+		self.assertEquals(owner_game_station.neighbours, owner_game_station_neighbours)
+
+		owner_possible_moves = game.get_owner_possible_moves(a_pair_id)
+		self.assertEquals(owner_possible_moves, owner_game_station_neighbours)
+
+	def test_possible_owner_moves_dont_contain_game_station_after_closing(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 5
+		owner_game_station = game.owners_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		a_neighbour_game_station = list(owner_game_station.neighbours)[0]
+		self.assertIn(a_neighbour_game_station,
+					  game.get_owner_possible_moves(a_pair_id))
+
+		a_neighbour_game_station.close()
+		self.assertNotIn(a_neighbour_game_station,
+						 game.get_owner_possible_moves(a_pair_id))
+
+	def test_possible_owner_moves_dont_contain_game_station_after_visiting(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 5
+		owner_game_station = game.owners_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		a_neighbour_game_station = list(owner_game_station.neighbours)[0]
+		a_neighbour_game_station.put_owner(a_pair_id)
+
+		owner_game_station.put_owner(a_pair_id)
+		self.assertNotIn(a_neighbour_game_station,
+						 game.get_owner_possible_moves(a_pair_id))
+
+	def test_possible_owner_moves_contain_game_station_after_visiting_all_neighbours(self):
+		game, pairs_count = GameFactory.create_and_start_game()
+
+		a_pair_id = 5
+		owner_game_station = game.owners_game_stations[a_pair_id]
+		# Fixures sanity check
+		self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+
+		for a_neighbour_game_station in owner_game_station.neighbours:
+			a_neighbour_game_station.put_owner(a_pair_id)
+		owner_game_station.put_owner(a_pair_id)
+		self.assertIn(a_neighbour_game_station,
+					  game.get_owner_possible_moves(a_pair_id))
 
 
 if __name__ == '__main__':
