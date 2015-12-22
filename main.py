@@ -266,7 +266,8 @@ class GameStation(object):
             .add(self)
 
     def remove_cat(self, pair_id):
-        self.cats.remove(pair_id)
+        if pair_id in self.cats:
+            self.cats.remove(pair_id)
 
     def remove_cat_from_previous_game_station(self, pair_id):
         previous_game_station = self.game.cats_game_stations.get(pair_id)
@@ -274,7 +275,8 @@ class GameStation(object):
             previous_game_station.remove_cat(pair_id)
 
     def remove_owner(self, pair_id):
-        self.owners.remove(pair_id)
+        if pair_id in self.owners:
+            self.owners.remove(pair_id)
 
     def remove_owner_from_previous_game_station(self, pair_id):
         previous_game_station = self.game.owners_game_stations.get(pair_id)
