@@ -203,7 +203,7 @@ class FindTheCatGame(object):
             if not possible_game_stations:
                 continue
 
-            next_game_station = choice(possible_game_stations)
+            next_game_station = choice(list(possible_game_stations))
             cat_game_station.move_cat_to(pair_id, next_game_station)
 
     def get_cat_possible_moves(self, pair_id):
@@ -218,7 +218,7 @@ class FindTheCatGame(object):
             if not possible_game_stations:
                 continue
 
-            next_game_station = choice(possible_game_stations)
+            next_game_station = choice(list(possible_game_stations))
             owner_game_station.move_owner_to(pair_id, next_game_station)
 
     def get_owner_possible_moves(self, pair_id):
