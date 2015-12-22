@@ -199,12 +199,12 @@ class FindTheCatGame(object):
 
     def move_cats(self):
         for pair_id in self.roaming_pairs_ids:
-            possible_game_stations = self.get_cat_possible_moves()
+            possible_game_stations = self.get_cat_possible_moves(pair_id)
             if not possible_game_stations:
                 continue
 
             next_game_station = choice(list(possible_game_stations))
-            cat_game_station.move_cat_to(pair_id, next_game_station)
+            next_game_station.put_cat(pair_id)
 
     def get_cat_possible_moves(self, pair_id):
         cat_game_station = self.cats_game_stations[pair_id]
@@ -214,12 +214,12 @@ class FindTheCatGame(object):
 
     def move_owners(self):
         for pair_id in self.roaming_pairs_ids:
-            possible_game_stations = self.get_owner_possible_moves()
+            possible_game_stations = self.get_owner_possible_moves(pair_id)
             if not possible_game_stations:
                 continue
 
             next_game_station = choice(list(possible_game_stations))
-            owner_game_station.move_owner_to(pair_id, next_game_station)
+            next_game_station.put_owner(pair_id)
 
     def get_owner_possible_moves(self, pair_id):
             owner_game_station = self.owners_game_stations[pair_id]
