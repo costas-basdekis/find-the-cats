@@ -187,12 +187,14 @@ class FindTheCatGame(object):
 
     def find_and_close_stations(self):
         matched_pairs_per_station = self.get_matched_pairs_per_station()
-        for game_station, matched_pairs in matched_pairs_per_station.iteritems():
+        for game_station, matched_pairs \
+                in matched_pairs_per_station.iteritems():
             if not matched_pairs:
                 continue
 
             for pair_id in matched_pairs:
-                print 'Owner', pair_id, 'found cat', pair_id, '-', game_station.station.name, 'is now closed'
+                print 'Owner', pair_id, 'found cat', pair_id, '-', \
+                    game_station.station.name, 'is now closed'
 
             game_station.close()
             self.roaming_pairs_ids -= matched_pairs
@@ -326,7 +328,8 @@ def main():
 
     pairs_count, = arguments
 
-    stations = Stations.from_json_files("./tfl_stations.json", "./tfl_connections.json")
+    stations = Stations.from_json_files("./tfl_stations.json",
+                                        "./tfl_connections.json")
     FindTheCatGame.start_and_run(stations, pairs_count=pairs_count)
 
 

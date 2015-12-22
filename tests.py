@@ -87,7 +87,8 @@ class GameFactory(object):
     @classmethod
     def create_game(cls, stations=None):
         if not stations:
-            stations = StationsFactory.create_stations_with_json_stations_and_connections()
+            stations = StationsFactory\
+                .create_stations_with_json_stations_and_connections()
 
         return main.FindTheCatGame(stations)
 
@@ -129,12 +130,13 @@ class TestStations(TestCase):
         self.assertEquals(station_1.name, StationsFactory.STATION_1_NAME)
 
     def test_loading_connections(self):
-        stations = StationsFactory.create_stations_with_json_stations_and_connections()
+        StationsFactory.create_stations_with_json_stations_and_connections()
 
 
 class TestConnections(TestCase):
     def setUp(self):
-        self.stations = StationsFactory.create_stations_with_json_stations_and_connections()
+        self.stations = StationsFactory\
+            .create_stations_with_json_stations_and_connections()
 
     def test_stations_are_connected(self):
         station_1 = self.stations.by_id(StationsFactory.STATION_1_ID)
@@ -180,11 +182,13 @@ class TestGameMatching(TestCase):
     def test_moving_a_cat_and_an_owner_to_a_station_matches_them(self):
         originally_unmatched_pair_id = GameFactory.UNMATCHED_PAIRS_ON_START[0]
         # Fixures sanity check
-        self.assertNotIn(originally_unmatched_pair_id, self.game.get_all_matched_pairs())
+        self.assertNotIn(originally_unmatched_pair_id,
+                         self.game.get_all_matched_pairs())
 
         GameFactory.move_cat_and_owner_to_same_game_station(
             self.game, originally_unmatched_pair_id)
-        self.assertIn(originally_unmatched_pair_id, self.game.get_all_matched_pairs())
+        self.assertIn(originally_unmatched_pair_id,
+                      self.game.get_all_matched_pairs())
 
     def test_matched_pairs_on_first_step_disappear(self):
         self.game.find_and_close_stations()
@@ -219,14 +223,16 @@ class TestVisiting(TestCase):
         a_pair_id = 0
         cat_game_station = self.game.cats_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(cat_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(cat_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         cat_game_station_neighbours = {
             self.game.by_id(StationsFactory.STATION_2_ID),
             self.game.by_id(StationsFactory.STATION_4_ID),
         }
         # Fixures sanity check
-        self.assertEquals(cat_game_station.neighbours, cat_game_station_neighbours)
+        self.assertEquals(cat_game_station.neighbours,
+                          cat_game_station_neighbours)
 
         cat_possible_moves = self.game.get_cat_possible_moves(a_pair_id)
         self.assertEquals(cat_possible_moves, cat_game_station_neighbours)
@@ -235,7 +241,8 @@ class TestVisiting(TestCase):
         a_pair_id = 0
         cat_game_station = self.game.cats_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(cat_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(cat_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         a_neighbour_game_station = list(cat_game_station.neighbours)[0]
         self.assertIn(a_neighbour_game_station,
@@ -249,14 +256,16 @@ class TestVisiting(TestCase):
         a_pair_id = 5
         owner_game_station = self.game.owners_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(owner_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         owner_game_station_neighbours = {
             self.game.by_id(StationsFactory.STATION_2_ID),
             self.game.by_id(StationsFactory.STATION_4_ID),
         }
         # Fixures sanity check
-        self.assertEquals(owner_game_station.neighbours, owner_game_station_neighbours)
+        self.assertEquals(owner_game_station.neighbours,
+                          owner_game_station_neighbours)
 
         owner_possible_moves = self.game.get_owner_possible_moves(a_pair_id)
         self.assertEquals(owner_possible_moves, owner_game_station_neighbours)
@@ -265,7 +274,8 @@ class TestVisiting(TestCase):
         a_pair_id = 5
         owner_game_station = self.game.owners_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(owner_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         a_neighbour_game_station = list(owner_game_station.neighbours)[0]
         self.assertIn(a_neighbour_game_station,
@@ -279,7 +289,8 @@ class TestVisiting(TestCase):
         a_pair_id = 5
         owner_game_station = self.game.owners_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(owner_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         a_neighbour_game_station = list(owner_game_station.neighbours)[0]
         a_neighbour_game_station.put_owner(a_pair_id)
@@ -292,7 +303,8 @@ class TestVisiting(TestCase):
         a_pair_id = 5
         owner_game_station = self.game.owners_game_stations[a_pair_id]
         # Fixures sanity check
-        self.assertEquals(owner_game_station.station._id, StationsFactory.STATION_1_ID)
+        self.assertEquals(owner_game_station.station._id,
+                          StationsFactory.STATION_1_ID)
 
         for a_neighbour_game_station in owner_game_station.neighbours:
             a_neighbour_game_station.put_owner(a_pair_id)
