@@ -300,6 +300,18 @@ class TestVisiting(TestCase):
         self.assertIn(a_neighbour_game_station,
                       self.game.get_owner_possible_moves(a_pair_id))
 
+    def test_removing_a_cat_from_a_station_it_doesnt_exist_is_a_noop(self):
+        a_pair_id = 0
+        cat_game_station = self.game.cats_game_stations[a_pair_id]
+        cat_game_station.remove_cat(a_pair_id)
+        cat_game_station.remove_cat(a_pair_id)
+
+    def test_removing_an_owner_from_a_station_it_doesnt_exist_is_a_noop(self):
+        a_pair_id = 0
+        owner_game_station = self.game.owners_game_stations[a_pair_id]
+        owner_game_station.remove_owner(a_pair_id)
+        owner_game_station.remove_owner(a_pair_id)
+
 
 if __name__ == '__main__':
     unittest_main()
